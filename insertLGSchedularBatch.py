@@ -4,7 +4,7 @@ import os
 from datetime import date as dt
 
 import seaborn as sns
-
+from time import time
 import matplotlib.pyplot as plt
 
 import string
@@ -68,7 +68,7 @@ def connectDynamoDBTable():
 
     dynamodb = boto3.resource('dynamodb',endpoint_url='http://localhost:8000')
     table = dynamodb.Table('schedular')
-    print("TABLE creation date:",table.creation_date_time) 
+    #print("TABLE creation date:",table.creation_date_time) 
 
     return table
 
@@ -87,45 +87,56 @@ def saveDynaboDB(data_dir):
     
     h,w = df_merge.shape
 
-    counter = 0
+    step50 = range(0,h,50)
+
+    batch_start_time = time()
+
+    with table.batch_writer(overwrite_by_pkeys=['tableKey', 'nextDate']) as batch:
+        for k in step50:
+            #print(i,i+50)
+            for i in range(k,k+50):
+                if i > (h-1):
+                    break
+
+                ser = df_merge.iloc[i,:]
+                name = ser[0]
+                hospital = ser[2]
+                medicine = ser[3]
+                nextDate = ser[4].strftime("%Y/%m/%d")
+                total_amount = ser[5]
+                exp = ser[7].strftime("%Y/%m/%d")
+                czDate = ser[9].strftime("%Y/%m/%d")
+
+                str_total_amount = str(ser[5])
+                dec_total_amount = Decimal(str_total_amount)
+
+                tKey = czDate + name + hospital + medicine + str_total_amount
+
+                if i != 0 and i % 100 == 0:
+                    print("inserted counter --> ",i)
+                    print(nextDate,name,hospital,medicine,dec_total_amount,exp,czDate)
+
+                schedule1 = {
+                    "tableKey": tKey,
+                    "nextDate": nextDate,
+                    "name": name,
+                    "hospital": hospital,
+                    "medicine": medicine,
+                    "total_amount":dec_total_amount,
+                    "expiry":exp,
+                    "czDate":czDate
+                }
+
+                batch.put_item( Item = schedule1)
+
+
+
     
-    for i in range(h):
-
-        ser = df_merge.iloc[i,:]
-        name = ser[0]
-        hospital = ser[2]
-        medicine = ser[3]
-        nextDate = ser[4].strftime("%Y/%m/%d")
-        total_amount = ser[5]
-        exp = ser[7].strftime("%Y/%m/%d")
-        czDate = ser[9].strftime("%Y/%m/%d")
-
-        str_total_amount = str(ser[5])
-        dec_total_amount = Decimal(str_total_amount)
-
-        tKey = czDate + name + hospital + medicine + str_total_amount
-
-        if i != 0 and i % 100 == 0:
-            print("inserted counter --> ",i)
-            print(nextDate,name,hospital,medicine,dec_total_amount,exp,czDate)
-
-        schedule1 = {
-            "tableKey": tKey,
-            "nextDate": nextDate,
-            "name": name,
-            "hospital": hospital,
-            "medicine": medicine,
-            "total_amount":dec_total_amount,
-            "expiry":exp,
-            "czDate":czDate
-        }
-
-        table.put_item( Item = schedule1)
-
     print("Table main key : nextDate + czDate + name + hospital + medicine + str_total_amount")
-    
-    print("total data records from RECEPTY: ", i)
+    print("Batch consuming %.4fs  "% (time() - batch_start_time) )
+    #print("total data records from RECEPTY: ", i)
 
+    table = connectDynamoDBTable()
     print("total table count after insertion.", table.item_count)
 
 def main():
