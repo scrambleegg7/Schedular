@@ -29,10 +29,14 @@ def loadCurrentData(data_dir):
     filename = os.path.join(data_dir,"longterm2.csv")
 
     print("filename for longterm2-->",filename)
-
+    print("- " * 40 )
+    print("longterm2 dataframe : ")
+    
     #df_lg = pd.read_csv(filename,encoding="Shift_JISx0213")
     df_lg = pd.read_csv(filename , encoding="Shift_JISx0213" )
-    
+
+    print( df_lg.tail() )    
+
     col_names = [ 'c{0:02d}'.format(i) for i in range( len( df_lg.columns ) ) ]
 
     df_lg.columns = col_names
@@ -108,9 +112,22 @@ def saveDynaboDB(data_dir):
                 czDate = ser[9].strftime("%Y/%m/%d")
 
                 str_total_amount = str(ser[5])
+
+                # for debugging use ...
+                #print( name,czDate,medicine,str_total_amount  )
+
                 dec_total_amount = Decimal(str_total_amount)
 
-                tKey = czDate + name + hospital + medicine + str_total_amount
+                try:
+                    tKey = czDate + name + hospital + medicine + str_total_amount
+                except:
+                    print("- " * 40 )
+                    print("-  tkey generating Error ....")
+
+                    print("name,hopital,medicne,czDate,total_amount")
+                    print(name,hospital,medicine,czDate,total_amount )
+                    print("")
+                    continue
 
                 if i != 0 and i % 100 == 0:
                     print("inserted counter --> ",i)
