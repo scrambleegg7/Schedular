@@ -29,7 +29,7 @@ else
 fi
 
 
-echo "------------------------------------" > $LOGS
+echo "------------------------------------" >> $LOGS
 echo "START to create CSV from GoogleSheet" >> $LOGS
 cd $GOOGLE
 $PYTHONP $GOOGLE/createLGCSVFromSheet.py >> $LOGS
