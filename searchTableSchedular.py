@@ -39,7 +39,7 @@ def main():
 
     table = connectDynamoDBTable()
 
-    data_dir = "/Users/donchan/Documents/myData/miyuki"
+    data_dir = "L:\\Recepty"
     receptyCls = ReceiptyClass(data_dir)
 
     df_merge = receptyCls.receiptyFlatten()
@@ -70,6 +70,7 @@ def main():
 
     tKey = nextDate + name + hospital + medicine    
 
+    print(tKey)
     try:
         response = table.get_item(
             Key={

@@ -86,10 +86,11 @@ class ReceiptyClass(object):
     def readReceipty(self, filename):
 
 
+        print("reading file....", filename)
         #
         # col_names is necessary field to get variable length columns data for making data frame.
         #
-        col_names = [ 'c{0:02d}'.format(i) for i in range(54) ]
+        col_names = [ 'c{0:02d}'.format(i) for i in range(81) ]
         df_re = pd.read_csv(filename,encoding="cp932", names=col_names)
 
         #df_re["c02"] = df_re["c02"].astype(int)

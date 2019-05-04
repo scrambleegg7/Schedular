@@ -40,7 +40,11 @@ class WarekiClass(object):
         if self.gengo == "4":
             # taisho
             self.heisei(syymmdd)
-            
+
+        if self.gengo == "5":
+            # taisho
+            self.reiwa(syymmdd)
+
         self.yyyymmdd = self.date_ops(self.yyyymmdd_str)
 
         return self.yyyymmdd
@@ -64,3 +68,7 @@ class WarekiClass(object):
         year = base + int(self.yy)
         self.convertYYYYMMDD(year)
     
+    def reiwa(self,syymmdd):
+        base = 2018
+        year = base + int(self.yy)
+        self.convertYYYYMMDD(year)
