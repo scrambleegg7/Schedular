@@ -90,7 +90,7 @@ class ReceiptyClass(object):
         #
         # col_names is necessary field to get variable length columns data for making data frame.
         #
-        col_names = [ 'c{0:02d}'.format(i) for i in range(82) ]
+        col_names = [ 'c{0:02d}'.format(i) for i in range(85) ]
         df_re = pd.read_csv(filename,encoding="cp932", names=col_names)
 
         #df_re["c02"] = df_re["c02"].astype(int)
