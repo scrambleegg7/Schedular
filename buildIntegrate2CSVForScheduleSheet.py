@@ -100,7 +100,13 @@ def main():
     print("* shape of tokyo/national integrated date", df_merge.shape)
 
     print("Exclude Tobunerima Clinic")
-    mask = df_merge.hospital.str.contains('北桜') 
+    
+
+    # changed on Apr.3rd 
+    # 東武練馬クリニック is renamed to exclude prefix 北桜
+    #mask = df_merge.hospital.str.contains('北桜')
+    mask = df_merge.hospital.str.contains('東武練馬クリニック')
+
     df_merge = df_merge[~mask].sort_values(["nextDate","name"])
     print("* shape after omitting Tobunerima clinic....", df_merge.shape)
 

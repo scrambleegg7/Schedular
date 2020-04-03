@@ -90,8 +90,16 @@ class ReceiptyClass(object):
         #
         # col_names is necessary field to get variable length columns data for making data frame.
         #
-        col_names = [ 'c{0:02d}'.format(i) for i in range(85) ]
-        df_re = pd.read_csv(filename,encoding="cp932", names=col_names)
+
+        with codecs.open(filename, "r", "Shift-JIS", "ignore") as file:
+            col_names = [ 'c{0:02d}'.format(i) for i in range(180) ]
+
+            df_re = pd.read_csv(file, delimiter=",", names=col_names, engine="python" )
+            print(df_re.head())
+            print("recepty csv data file size --> ",df_re.shape)
+
+        #col_names = [ 'c{0:02d}'.format(i) for i in range(180) ]
+        #df_re = pd.read_csv(filename,encoding="cp932", names=col_names)
 
         #df_re["c02"] = df_re["c02"].astype(int)
 
