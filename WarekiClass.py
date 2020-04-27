@@ -18,7 +18,21 @@ class WarekiClass(object):
     def __init__(self):
         
         self.date_ops = lambda x:pd.datetime.strptime(x,"%Y/%m/%d")
-    
+
+    def getDateSeireki(self,indata):
+        
+        syymmdd = str(indata)
+        
+        self.yyyy = syymmdd[0:4]
+        self.mm = syymmdd[4:6]
+        self.dd = syymmdd[6:8]
+        self.convertYYYYMMDD(self.yyyy)
+
+        self.yyyymmdd = self.date_ops(self.yyyymmdd_str)
+        
+        return self.yyyymmdd
+
+
     def getDate(self,indata):
         
         syymmdd = str(indata)

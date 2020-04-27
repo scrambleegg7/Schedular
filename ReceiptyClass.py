@@ -215,6 +215,8 @@ class ReceiptyClass(object):
         SH_index = self.getSHCZIY(personal_block)
 
         wareki_ops = lambda d:self.wareki.getDate(d)
+        seireki_ops = lambda d:self.wareki.getDateSeireki(d)
+        
 
         personal_data = personal_block.copy()
         personal_data.reset_index(drop=True)
@@ -253,8 +255,9 @@ class ReceiptyClass(object):
             
             days = pd.to_timedelta(CZ.loc[:,"c05"],'d')
             days_14 = pd.to_timedelta(14,'d')
-            CZ.c02 = CZ.c02.apply(wareki_ops)
-            CZ.c03 = CZ.c03.apply(wareki_ops)
+            CZ.c02 = CZ.c02.apply(seireki_ops)
+            CZ.c03 = CZ.c03.apply(seireki_ops)
+            print("cz03", CZ.c03, days)
             CZ.c06 = ( CZ.c03 + days )
             
             #days = timedelta(days=)
