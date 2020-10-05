@@ -34,9 +34,9 @@ def loadCurrentData(data_dir):
 
     filename = os.path.join(data_dir,"longterm2.csv")
 
-    print("[insertLGSchedularBatch] filename for longterm2-->",filename)
+    print("[insertMongoLGSchedularBatch] filename for longterm2-->",filename)
     print("- " * 40 )
-    print("[insertLGSchedularBatch] longterm2 dataframe : ")
+    print("[insertMongoLGSchedularBatch] longterm2 dataframe : ")
     
     #df_lg = pd.read_csv(filename,encoding="Shift_JISx0213")
     df_lg = pd.read_csv(filename , encoding="Shift_JISx0213" )
@@ -71,16 +71,9 @@ def loadCurrentData(data_dir):
     cols = ["name","mark","hospital","medicine","nextDate","total_amount","mark2","exp","standard","czDate"]
     df_lg.columns = cols
 
-    print("[insertLGSchedularBatch] max date (previous date of latest date)  ..", prv2_date)
+    print("[insertMongoLGSchedularBatch] max date (previous date of latest date)  ..", prv2_date)
     return df_lg, prv2_date
 
-def connectDynamoDBTable():
-
-    dynamodb = boto3.resource('dynamodb',endpoint_url='http://localhost:8000')
-    table = dynamodb.Table('schedular')
-    #print("TABLE creation date:",table.creation_date_time) 
-
-    return table
 
 def connectMongDB():
 
@@ -92,21 +85,19 @@ def connectMongDB():
 
 def saveMongoDB(data_dir):
 
-    #table = connectDynamoDBTable()
-
     mongoObj = connectMongDB()
 
     ret = mongoObj.delete_many()
-    print("[insertLGSchedularBatch]  counting schedular table -->   %s " % ret  ) 
+    print("[insertMongoLGSchedularBatch]  counting schedular table -->   %s " % ret  ) 
 
     num_data = mongoObj.count()
-    print("[insertLGSchedularBatch]  counting schedular table -->   %d " % num_data  ) 
+    print("[insertMongoLGSchedularBatch]  counting schedular table -->   %d " % num_data  ) 
 
     #df_merge = receptyCls.receiptyFlatten()
     #print("* shape of tokyo/national integrated date", df_merge.shape)
     df_merge , prv2_date = loadCurrentData(data_dir)
-    print("[insertLGSchedularBatch] csv longterm total count:", len(df_merge))
-    print("[insertLGSchedularBatch] Latest czDate of csv longterm", prv2_date)
+    print("[insertMongoLGSchedularBatch] csv longterm total count:", len(df_merge))
+    print("[insertMongoLGSchedularBatch] Latest czDate of csv longterm", prv2_date)
     
     h,w = df_merge.shape
 
@@ -143,15 +134,15 @@ def saveMongoDB(data_dir):
                 tKey = czDate + name + hospital + medicine + str_total_amount
             except:
                 print("- " * 40 )
-                print("[insertLGSchedularBatch] -  tkey generating Error ....")
+                print("[insertMongoLGSchedularBatch] -  tkey generating Error ....")
 
-                print("[insertLGSchedularBatch] name,hopital,medicne,czDate,total_amount")
+                print("[insertMongoLGSchedularBatch] name,hopital,medicne,czDate,total_amount")
                 print(name,hospital,medicine,czDate,total_amount )
                 print("")
                 continue
 
             if i != 0 and i % 200 == 0:
-                print("[insertLGSchedularBatch] inserted counter --> ",i)
+                print("[insertMongoLGSchedularBatch] inserted counter --> ",i)
                 print(nextDate,name,hospital,medicine,dec_total_amount,exp,czDate)
 
             schedule1 = {
@@ -170,19 +161,17 @@ def saveMongoDB(data_dir):
         #print(buffer)
 
         ret = mongoObj.add_many(buffer)
-        print("[insertLGSchedularBatch]")
+        print("[insertMongoLGSchedularBatch]")
         #print(ret)
 
     
-    print("[insertLGSchedularBatch] Table main key : nextDate + czDate + name + hospital + medicine + str_total_amount")
-    print("[insertLGSchedularBatch] Batch consuming %.4fs  "% (time() - batch_start_time) )
+    print("[insertMongoLGSchedularBatch] Table main key : nextDate + czDate + name + hospital + medicine + str_total_amount")
+    print("[insertMongoLGSchedularBatch] Batch consuming %.4fs  "% (time() - batch_start_time) )
     #print("total data records from RECEPTY: ", i)
 
     num_data = mongoObj.count()
-    print("[insertLGSchedularBatch] after Inserting, counting schedular table -->   %d " % num_data  ) 
+    print("[insertMongoLGSchedularBatch] after Inserting, counting schedular table -->   %d " % num_data  ) 
 
-    #table = connectDynamoDBTable()
-    #print("[insertLGSchedularBatch] total table count after insertion.", table.item_count)
 
 def main():
 
