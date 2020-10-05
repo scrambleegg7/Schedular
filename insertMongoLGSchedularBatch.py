@@ -18,6 +18,12 @@ from decimal import *
 from WarekiClass import WarekiClass
 from ReceiptyClass import ReceiptyClass
 
+from pymongo import MongoClient
+from mongo_connect import ReceptyMongo
+
+from bson.decimal128 import Decimal128
+
+
 import platform
 
 def loadCurrentData(data_dir):
@@ -76,12 +82,25 @@ def connectDynamoDBTable():
 
     return table
 
+def connectMongDB():
+
+    mongoObj = ReceptyMongo()
+    mongoObj.setSchedularTable()
+
+    return mongoObj
 
 
-def saveDynaboDB(data_dir):
+def saveMongoDB(data_dir):
 
-    table = connectDynamoDBTable()
+    #table = connectDynamoDBTable()
 
+    mongoObj = connectMongDB()
+
+    ret = mongoObj.delete_many()
+    print("[insertLGSchedularBatch]  counting schedular table -->   %s " % ret  ) 
+
+    num_data = mongoObj.count()
+    print("[insertLGSchedularBatch]  counting schedular table -->   %d " % num_data  ) 
 
     #df_merge = receptyCls.receiptyFlatten()
     #print("* shape of tokyo/national integrated date", df_merge.shape)
@@ -95,66 +114,75 @@ def saveDynaboDB(data_dir):
 
     batch_start_time = time()
 
-    with table.batch_writer(overwrite_by_pkeys=['tableKey', 'nextDate']) as batch:
-        for k in step50:
-            #print(i,i+50)
-            for i in range(k,k+50):
-                if i > (h-1):
-                    break
+    for k in step50:
+        #print(i,i+50)
+        buffer = []
+        for i in range(k,k+50):
+            if i > (h-1):
+                break
 
-                ser = df_merge.iloc[i,:]
-                name = ser[0]
-                hospital = ser[2]
-                medicine = ser[3]
-                nextDate = ser[4].strftime("%Y/%m/%d")
-                total_amount = ser[5]
-                exp = ser[7].strftime("%Y/%m/%d")
-                czDate = ser[9].strftime("%Y/%m/%d")
+            ser = df_merge.iloc[i,:]
+            name = ser[0]
+            hospital = ser[2]
+            medicine = ser[3]
+            nextDate = ser[4].strftime("%Y/%m/%d")
+            total_amount = ser[5]
+            exp = ser[7].strftime("%Y/%m/%d")
+            czDate = ser[9].strftime("%Y/%m/%d")
 
-                str_total_amount = str(ser[5])
+            str_total_amount = str(ser[5])
 
-                # for debugging use ...
-                #print( name,czDate,medicine,str_total_amount  )
+            # for debugging use ...
+            #print( name,czDate,medicine,str_total_amount  )
 
-                dec_total_amount = Decimal(str_total_amount)
+            #dec_total_amount = Decimal(str_total_amount)
+            dec_total_amount = Decimal128(str_total_amount)
+            
 
-                try:
-                    tKey = czDate + name + hospital + medicine + str_total_amount
-                except:
-                    print("- " * 40 )
-                    print("[insertLGSchedularBatch] -  tkey generating Error ....")
+            try:
+                tKey = czDate + name + hospital + medicine + str_total_amount
+            except:
+                print("- " * 40 )
+                print("[insertLGSchedularBatch] -  tkey generating Error ....")
 
-                    print("[insertLGSchedularBatch] name,hopital,medicne,czDate,total_amount")
-                    print(name,hospital,medicine,czDate,total_amount )
-                    print("")
-                    continue
+                print("[insertLGSchedularBatch] name,hopital,medicne,czDate,total_amount")
+                print(name,hospital,medicine,czDate,total_amount )
+                print("")
+                continue
 
-                if i != 0 and i % 100 == 0:
-                    print("[insertLGSchedularBatch] inserted counter --> ",i)
-                    print(nextDate,name,hospital,medicine,dec_total_amount,exp,czDate)
+            if i != 0 and i % 200 == 0:
+                print("[insertLGSchedularBatch] inserted counter --> ",i)
+                print(nextDate,name,hospital,medicine,dec_total_amount,exp,czDate)
 
-                schedule1 = {
-                    "tableKey": tKey,
-                    "nextDate": nextDate,
-                    "name": name,
-                    "hospital": hospital,
-                    "medicine": medicine,
-                    "total_amount":dec_total_amount,
-                    "expiry":exp,
-                    "czDate":czDate
-                }
+            schedule1 = {
+                #"tableKey": tKey,
+                "nextDate": nextDate,
+                "name": name,
+                "hospital": hospital,
+                "medicine": medicine,
+                "total_amount":dec_total_amount,
+                "expiry":exp,
+                "czDate":czDate
+            }
 
-                batch.put_item( Item = schedule1)
+            buffer.append(schedule1)
 
+        #print(buffer)
 
+        ret = mongoObj.add_many(buffer)
+        print("[insertLGSchedularBatch]")
+        #print(ret)
 
     
     print("[insertLGSchedularBatch] Table main key : nextDate + czDate + name + hospital + medicine + str_total_amount")
     print("[insertLGSchedularBatch] Batch consuming %.4fs  "% (time() - batch_start_time) )
     #print("total data records from RECEPTY: ", i)
 
-    table = connectDynamoDBTable()
-    print("[insertLGSchedularBatch] total table count after insertion.", table.item_count)
+    num_data = mongoObj.count()
+    print("[insertLGSchedularBatch] after Inserting, counting schedular table -->   %d " % num_data  ) 
+
+    #table = connectDynamoDBTable()
+    #print("[insertLGSchedularBatch] total table count after insertion.", table.item_count)
 
 def main():
 
@@ -164,7 +192,7 @@ def main():
     else:
         data_dir = "/Volumes/myShare/ipython"
 
-    saveDynaboDB(data_dir)
+    saveMongoDB(data_dir)
 
 if __name__ == "__main__":
 

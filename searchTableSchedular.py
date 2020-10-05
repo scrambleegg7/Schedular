@@ -43,7 +43,7 @@ def main():
     receptyCls = ReceiptyClass(data_dir)
 
     df_merge = receptyCls.receiptyFlatten()
-    print("* shape of tokyo/national integrated date", df_merge.shape)
+    print("[searchTableSchedular] shape of tokyo/national integrated date", df_merge.shape)
     
     h,w = df_merge.shape
 

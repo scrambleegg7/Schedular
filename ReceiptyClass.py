@@ -32,14 +32,14 @@ class ReceiptyClass(object):
     def readHoliday(self):
         holiday_csv = os.path.join( self.data_dir, "holiday.csv" )
         #holiday_csv = "/RECEPTY/holiday.csv"
-        print("holiday file:",holiday_csv)
+        print("[ReceiptyClass] holiday file:",holiday_csv)
         self.df_holiday = pd.read_csv(holiday_csv,names=["hdate"],parse_dates=["hdate"])
 
     def readDrugMaster(self):
 
         y_csv = os.path.join( self.data_dir, "y.csv" )
         #y_csv = "/RECEPTY/y.csv"
-        print("medicine master file:", y_csv)
+        print("[ReceiptyClass] medicine master file:", y_csv)
         #self.df_y = pd.read_csv(y_csv,header=None,usecols=[2,4,31])
         self.df_y = pd.read_csv(y_csv,encoding="Shift_JISx0213",header=None,usecols=[2,4,31])
 
@@ -55,7 +55,7 @@ class ReceiptyClass(object):
         outbound = os.path.join(self.data_dir, out_kanji)
         outfilename = sorted( glob.glob(outbound + "*"))[-1]        
 
-        print("Outbound filename:", outfilename)
+        print("[ReceiptyClass] Outbound filename:", outfilename)
 
         #outbound = os.path.join(self.data_dir, "出庫201803130958.csv")
         self.df_out = pd.read_csv(outfilename,encoding="Shift_JISx0213",header=0)
@@ -86,7 +86,7 @@ class ReceiptyClass(object):
     def readReceipty(self, filename):
 
 
-        print("reading file....", filename)
+        print("[ReceiptyClass] reading file....", filename)
         #
         # col_names is necessary field to get variable length columns data for making data frame.
         #
@@ -95,8 +95,8 @@ class ReceiptyClass(object):
             col_names = [ 'c{0:02d}'.format(i) for i in range(180) ]
 
             df_re = pd.read_csv(file, delimiter=",", names=col_names, engine="python" )
-            print(df_re.head())
-            print("recepty csv data file size --> ",df_re.shape)
+            #print(df_re.head())
+            print("[ReceiptyClass] recepty csv data file size --> ",df_re.shape)
 
         #col_names = [ 'c{0:02d}'.format(i) for i in range(180) ]
         #df_re = pd.read_csv(filename,encoding="cp932", names=col_names)
@@ -143,7 +143,7 @@ class ReceiptyClass(object):
 
         df_tok =df_tok.append(df_national)
 
-        print("df_tok shape ",df_tok.shape )
+        print("[ReceiptyClass] df_tok shape ",df_tok.shape )
         
         #df_merge =  pd.merge(df_tok,self.df_out, on = ["czDate", "total_amount", "medicine"], how="left" )
         df_merge = df_tok.copy()
@@ -152,7 +152,7 @@ class ReceiptyClass(object):
         newcolname = ["name","mark","hospital","medicine","nextDate","total_amount","mark2","exp","standard","czDate"]
         df_merge.columns = newcolname
 
-        print("df_merge shape ", df_merge.shape)
+        print("[ReceiptyClass] df_merge shape ", df_merge.shape)
         print(df_merge.head() )
 
         #print("* minimum czDate", min(df_merge.czDate))
@@ -257,7 +257,9 @@ class ReceiptyClass(object):
             days_14 = pd.to_timedelta(14,'d')
             CZ.c02 = CZ.c02.apply(seireki_ops)
             CZ.c03 = CZ.c03.apply(seireki_ops)
-            print("cz03", CZ.c03, days)
+            
+            #print("cz03", CZ.c03, days)
+            
             CZ.c06 = ( CZ.c03 + days )
             
             #days = timedelta(days=)
