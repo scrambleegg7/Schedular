@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime
 
 from pymongo import MongoClient
+from pymongo import errors
 
 
 # mongodb+srv://<username>:<password>@mymongodbcluster.k44wh.mongodb.net/<dbname>?retryWrites=true&w=majority
@@ -28,7 +29,12 @@ class ReceptyMongo(object):
 
     def add_many(self, posts):
         """ insert bulk data """
-        return self.table.insert_many(posts)
+
+        try:
+            res = self.table.insert_many(posts)
+        except errors.BulkWriteError as e:
+            print( e.details['writeErrors'] )
+        return res
 
     def count(self):
 

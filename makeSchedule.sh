@@ -29,7 +29,7 @@ export LOGS=$SCHEDULE/daily.log
 #fi
 
 
-echo "------------------------------------" >> $LOGS
+echo "------------------------------------" > $LOGS
 echo "[makeSchedule.sh] START to create CSV from GoogleSheet" >> $LOGS
 cd $GOOGLE
 $PYTHONP $GOOGLE/createLGCSVFromSheet.py >> $LOGS

@@ -124,8 +124,8 @@ def main():
     #mask = df_merge.hospital.str.contains('北桜')
     mask = df_merge.hospital.str.contains('東武練馬クリニック')
 
-    #df_merge = df_merge[mask].sort_values(["nextDate","name"])
-    df_merge = df_merge[~mask].sort_values(["nextDate","name"])
+    df_merge = df_merge[mask].sort_values(["nextDate","name"])
+    # #df_merge = df_merge[~mask].sort_values(["nextDate","name"])
 
     print("[buildMongoIntegrate2CSVForScheduleSheet] * shape after omitting Tobunerima clinic....", df_merge.shape)
 
@@ -154,7 +154,9 @@ def main():
         ret_obj = mongoObj.findAndLimit(query)
         
         if ret_obj == dict():
-            print("[buildMongoIntegrate2CSVForScheduleSheet] --> MongoDB Not found", row_data)
+            if i % 200 == 0:
+                print("[buildMongoIntegrate2CSVForScheduleSheet] --> MongoDB Not found", row_data)
+            
             df_Select.loc[i] = row_data
             continue
         
@@ -166,7 +168,7 @@ def main():
             
 
     #data_dir = "/Volumes/myShare/ipython"
-    integrate_csvfile = os.path.join(data_dir, "integrate2.csv")
+    integrate_csvfile = os.path.join(data_dir, "integrate2TobuNerima.csv")
 
     print("[buildMongoIntegrate2CSVForScheduleSheet] Selected data having new czDate / name. ",df_Select.shape)
     print("[buildMongoIntegrate2CSVForScheduleSheet] data is saved.", integrate_csvfile)
