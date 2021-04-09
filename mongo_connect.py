@@ -30,10 +30,25 @@ class ReceptyMongo(object):
     def add_many(self, posts):
         """ insert bulk data """
 
+        if not posts:
+            print("")
+            print("** [add_many blank !!!] **")
+            return
+
         try:
             res = self.table.insert_many(posts)
+
         except errors.BulkWriteError as e:
             print( e.details['writeErrors'] )
+            
+
+        except Exception as e:
+            print("")
+            print("** [add_many error] **")
+            print("posts---> %s" % posts)
+            
+            
+
         return res
 
     def count(self):
