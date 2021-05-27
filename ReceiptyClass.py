@@ -131,6 +131,11 @@ class ReceiptyClass(object):
         df_re[df_re["c00"] == "IY"] = df_iy_merge
         #print("** AFTER ",df_iy_merge.head(15))
 
+        #print("**" * 20)
+        #print("df_iy_merge")
+        #print(df_iy_merge.head(3))
+        #print(df_iy_merge.tail(3))
+
         return df_re
     
     def receiptyFlatten(self):
@@ -147,13 +152,22 @@ class ReceiptyClass(object):
         
         #df_merge =  pd.merge(df_tok,self.df_out, on = ["czDate", "total_amount", "medicine"], how="left" )
         df_merge = df_tok.copy()
-        cols = ["name","mark","hospital","medicine","nextDate","total_amount","mark2","exp","mark2","czDate"]
+
+
+        print("**" * 20)
+        print("")
+        #print(df_merge.head(3))
+        #print(df_merge.tail(3))
+        
+
+        cols = ["name","mark","hospital","medicine","nextDate","total_amount","mark2","exp","mark2","czDate","YJCode"]
         df_merge = df_merge[cols]
-        newcolname = ["name","mark","hospital","medicine","nextDate","total_amount","mark2","exp","standard","czDate"]
+        newcolname = ["name","mark","hospital","medicine","nextDate","total_amount","mark2","exp","standard","czDate","YJCode"]
         df_merge.columns = newcolname
 
-        print("[ReceiptyClass] df_merge shape ", df_merge.shape)
-        print(df_merge.head() )
+        #print("[ReceiptyClass] df_merge shape ", df_merge.shape)
+        #print(df_merge.head() )
+        #print("**" * 20)
 
         #print("* minimum czDate", min(df_merge.czDate))
 
@@ -293,15 +307,19 @@ class ReceiptyClass(object):
                     amount = IY["c03"].values[iy_i]
                     drugName = IY["c04"].values[iy_i]
 
+                    #YJCode
+                    YJCode = IY["c05"].values[iy_i]
+
+
                     if zaikei in ["1","3"]:
                         total_amount = float(czdays * amount)
                     else:
                         total_amount = amount
 
-                    drug_detail = [name,'',hospital,drugName,nextDate,total_amount,'',expDate,'',czDate]
+                    drug_detail = [name,'',hospital,drugName,nextDate,total_amount,'',expDate,'',czDate, YJCode]
                     medicine_details.append(drug_detail )
 
-        cols = ["name","mark","hospital","medicine","nextDate","total_amount","mark2","exp","mark3","czDate"]
+        cols = ["name","mark","hospital","medicine","nextDate","total_amount","mark2","exp","mark3","czDate","YJCode"]
         df_medicine = pd.DataFrame( medicine_details, columns=cols )
 
         return df_medicine
