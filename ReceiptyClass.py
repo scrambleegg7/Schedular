@@ -20,24 +20,24 @@ from WarekiClass import WarekiClass
 
 class ReceiptyClass(object):
 
-    def __init__(self,data_dir):
+    def __init__(self,data_dir, base_master_dir = "L:/RECEPTY"):
 
         self.data_dir = data_dir
+        self.base_master_dir = base_master_dir
         self.readDrugMaster()
-        #self.readOutboundDetail()
         self.readHoliday()
 
         self.wareki = WarekiClass()
 
     def readHoliday(self):
-        holiday_csv = os.path.join( self.data_dir, "holiday.csv" )
+        holiday_csv = os.path.join( self.base_master_dir, "holiday.csv" )
         #holiday_csv = "/RECEPTY/holiday.csv"
         print("[ReceiptyClass] holiday file:",holiday_csv)
         self.df_holiday = pd.read_csv(holiday_csv,names=["hdate"],parse_dates=["hdate"])
 
     def readDrugMaster(self):
 
-        y_csv = os.path.join( self.data_dir, "y.csv" )
+        y_csv = os.path.join( self.base_master_dir, "y.csv" )
         #y_csv = "/RECEPTY/y.csv"
         print("[ReceiptyClass] medicine master file:", y_csv)
         #self.df_y = pd.read_csv(y_csv,header=None,usecols=[2,4,31])
@@ -45,25 +45,6 @@ class ReceiptyClass(object):
 
         self.df_y.columns = ["densan_code","drugname","YJcode"]
 
-    def readOutboundDetail(self):
-
-        date_ops = lambda x:pd.datetime.strptime(x,"%Y/%m/%d")
-
-        out_kanji = u'出庫'
-        #os.listdir("./")
-
-        outbound = os.path.join(self.data_dir, out_kanji)
-        outfilename = sorted( glob.glob(outbound + "*"))[-1]        
-
-        print("[ReceiptyClass] Outbound filename:", outfilename)
-
-        #outbound = os.path.join(self.data_dir, "出庫201803130958.csv")
-        self.df_out = pd.read_csv(outfilename,encoding="Shift_JISx0213",header=0)
-
-        #col_names = [ 'c{0:02d}'.format(i) for i in range( len( df_out.columns ) ) ]
-        col_names = [[ "c00","czDate","c02","c03","standard","c05","total_amount","c07","c08","c09","c10","medicine","c12","YJcode","c14","c15","c16","c17" ]     ]
-        self.df_out.columns = col_names
-        self.df_out.czDate = self.df_out.czDate.apply(date_ops)
 
     def weekDaySearch(self, date):
 

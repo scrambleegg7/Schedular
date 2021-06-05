@@ -44,7 +44,8 @@ echo "[makeAllSchedule.sh] build integrate2.csv " >> $LOGS
 #$PYTHONP $SCHEDULE/buildIntegrate2CSVForScheduleSheet.py >> $LOGS
 #$PYTHONP $SCHEDULE/buildMongoIntegrate2CSVForScheduleSheet.py >> $LOGS
 
-$PYTHONP $SCHEDULE/buildMongoIntegrate2CSVForScheduleSheetTobuNERIMA.py >> $LOGS
+$PYTHONP $SCHEDULE/buildMongoIntegrate2CSVForScheduleSheetTobuNERIMA_v3.py >> $LOGS
+$PYTHONP $SCHEDULE/buildOrderEpiCSV.py >> $LOGS
 
 #echo "------------------------------------" >> $LOGS
 #echo "[makeAllSchedule.sh] Append RECEPTY new data on Google Sheet." >> $LOGS
