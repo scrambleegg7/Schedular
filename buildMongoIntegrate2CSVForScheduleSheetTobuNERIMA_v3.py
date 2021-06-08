@@ -104,10 +104,44 @@ class SchedulerClass(object):
 
         return df_old_merges
 
+    def deletePastData(self, df_merge_):
+
+        df_merge = df_merge_.sort_values(["name","medicine","nextDate"])
+        df_merge = df_merge.reset_index()        
+        df_merge.nextDate = pd.to_datetime(df_merge.nextDate)
+        df_merge.czDate =pd.to_datetime(df_merge.czDate) 
+
+        newdatalist = []
+
+        for idx in df_merge.index:
+
+            nextDate = df_merge.iloc[idx].nextDate
+            name =     df_merge.loc[idx,"name"]
+            medicine = df_merge.iloc[idx].medicine
+            prev_nextDate = nextDate - pd.Timedelta(8,unit="D")
+            fwd_nextDate = nextDate + pd.Timedelta(8,unit="D")
+
+            #if df_merge.iloc[idx].YJCode == "5200038D1093":
+            #    print(df_merge.iloc[idx].czDate, nextDate,prev_nextDate,fwd_nextDate,name,medicine)
+
+            mask = (df_merge.czDate >= prev_nextDate) & (df_merge.czDate <= fwd_nextDate )  &   \
+                (df_merge.name == name) & (df_merge.medicine == medicine) & (df_merge.index > idx)
+
+            df_select = df_merge[mask]
+            if df_select.shape[0] > 0: # and df_merge.iloc[idx].YJCode == "5200038D1093":
+                continue
+
+            newdatalist.append(df_merge.iloc[idx].tolist()) 
+
+        df_merge_new = pd.DataFrame(newdatalist,columns=df_merge.columns)
+
+        return df_merge_new
+
+    def swapDrug(sefl):
+        pass
+
 
     def generateMergeFile(self):
-
-
 
         def h2zConv(x):
             return jaconv.h2z( x, digit=True, ascii=True)
@@ -129,7 +163,7 @@ class SchedulerClass(object):
         
 
         #df_merge = df_merge.sort_values(["medicine","hospital","nextDate"])
-        df_merge = df_merge.sort_values(["medicine","nextDate"])
+
     
         print("[buildMongoIntegrate2CSVForScheduleSheet] * shape of everything including ....", df_merge.shape)
 
@@ -140,8 +174,15 @@ class SchedulerClass(object):
         # set Today with MyDateClass
         #
         #YYYY = myDateObj.strYYYY()
-        mask = df_merge.nextDate >= pd.to_datetime( self.TDY )
+        mask = df_merge.nextDate >= ( pd.to_datetime( self.TDY ) - pd.Timedelta(7,unit="D") )
+        mask2 = df_merge.nextDate < pd.to_datetime( self.TDY )
+        
         df_merge = df_merge[mask].copy()
+        
+        # # delete past data if nextDate is matched with future czDate
+        df_merge = self.deletePastData(df_merge)
+        df_merge = df_merge.sort_values(["medicine","nextDate"])        
+        
         print("[+] new size of df_merge", df_merge.shape)
         df_merge.nextDate = df_merge.nextDate.dt.strftime("%Y/%m/%d")
         df_merge.czDate = df_merge.czDate.dt.strftime("%Y/%m/%d")
@@ -355,8 +396,8 @@ class SchedulerClass(object):
     def consolidateByYJCode(self):
 
         # target negative mark2 
-        df_merge_ = self.df_merge[self.df_merge.mark2 < 0].copy()      
-        df_consoli_by_YJcode = df_merge_.groupby(["medicine","YJCode","standard"])["mark2"].sum().reset_index()
+        #df_merge_ = self.df_merge[self.df_merge.mark2 < 0].copy()      
+        df_consoli_by_YJcode = self.df_merge.groupby(["medicine","YJCode","standard"])["mark2"].sum().reset_index()
         print("-- " * 20)
         print("[+] consolidated by YJ/standard")
         print("[+] shape of consolidated :  %s "  % ( df_consoli_by_YJcode.shape, ) )
