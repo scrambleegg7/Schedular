@@ -109,7 +109,7 @@ class OrderEPIClass(object):
         df_merge.nextDate = pd.to_datetime( df_merge.nextDate )
         #fwd14d = pd.to_datetime( "2021/6/3" ) + pd.Timedelta(10,unit="D")
         #df_merge_ = df_merge[ (df_merge.nextDate <= fwd14d) & (df_merge.mark2 < 0) ].copy()
-        fwd14d = pd.to_datetime( self.TDY ) + pd.Timedelta(10,unit="D")
+        fwd14d = pd.to_datetime( self.TDY ) + pd.Timedelta(7,unit="D")
         df_merge = df_merge[ (df_merge.nextDate <= fwd14d) & (df_merge.mark2 < 0) ].copy()
 
         df_consoli_by_YJcode = df_merge.groupby(["medicine","YJCode","standard"])["mark2"].sum()
@@ -120,6 +120,7 @@ class OrderEPIClass(object):
         #display( df_consoli_by_YJcode.tail(3))
         orderepis = []
         non_orderepis = []
+        error_orders = []
 
         for idx in list( df_consoli_by_YJcode.index ):
 
@@ -148,8 +149,12 @@ class OrderEPIClass(object):
                 mask = (df_in.drugname == medicine) & ( df_in.standard.str.contains( standard ) )
                 df_in_sel = df_in[mask]
                 if df_in_sel.shape[0] == 0:
+                    print( "[-] Incoming data/Predict data inconsistant."  )
                     print( medicine,yjcode,standard,mark2  )
-                    raise("error" )
+                    error_data =[ medicine,yjcode,standard,mark2  ]
+                    error_orders.append(error_data)
+                    continue
+                    #raise("error" )
                 elif df_in_sel.shape[0] > 1:
                     max_indate = df_in_sel.indate.max()
                     df_in_sel = df_in_sel[ df_in_sel.indate == max_indate ].iloc[0]
@@ -200,22 +205,28 @@ class OrderEPIClass(object):
 
 
 
-        self.saveCSVFiles(orderepis,non_orderepis)
+        self.saveCSVFiles(orderepis,non_orderepis,error_orders)
     
-    def saveCSVFiles(self, orderepis, non_orderepis):
+    def saveCSVFiles(self, orderepis, non_orderepis,error_orders):
 
         data_dir = self.data_dir
 
         ofilename = os.path.join(data_dir,"orderepi.csv")
         nonfilename = os.path.join(data_dir,"non_epi.csv")
-
+        errorfilename = os.path.join(data_dir,"error_epi.csv")
+        
 
         df = pd.DataFrame(orderepis)
         df.to_csv(ofilename, index=False, encoding="cp932",header=False)
-
+        #print("[+] orderepi raw data.")
+        #print(df)
 
         df = pd.DataFrame(non_orderepis)
         df.to_csv(nonfilename, index=False, encoding="cp932",header=False)        
+
+        df_err = pd.DataFrame(error_orders)
+        df_err.to_csv(errorfilename, index=False, encoding="cp932",header=False)        
+
 
 
 def main():

@@ -181,7 +181,7 @@ class SchedulerClass(object):
         
         # # delete past data if nextDate is matched with future czDate
         df_merge = self.deletePastData(df_merge)
-        df_merge = df_merge.sort_values(["medicine","nextDate"])        
+        df_merge = df_merge.sort_values(["medicine","standard","nextDate"])        
         
         print("[+] new size of df_merge", df_merge.shape)
         df_merge.nextDate = df_merge.nextDate.dt.strftime("%Y/%m/%d")
