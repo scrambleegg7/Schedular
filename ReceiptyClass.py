@@ -89,8 +89,8 @@ class ReceiptyClass(object):
 
         # 1. pick up selected fields from IY record
         IY_RECORD = df_re[df_re["c00"] == "IY"][["c00","c01","c02","c03"]].copy()
-        #print("** BEFORE ",IY_RECORD.head(15))
-        #print(IY_RECORD.shape)
+        print("** BEFORE ",IY_RECORD.head(15))
+        print(IY_RECORD.shape)
 
         # 2. rename columns name
         IY_RECORD.columns = ["ID","DUMMY","densan_code","amount"]
@@ -99,18 +99,22 @@ class ReceiptyClass(object):
         # 4. merge
         df_iy_merge = pd.merge(IY_RECORD,self.df_y, how="left", left_on = 'densan_code', right_on = 'densan_code')
 
+
         # 5. rename columns name to original ones. eg. c00 c01 c02 ....
         col_names = [ 'c{0:02d}'.format(i) for i in range(df_iy_merge.shape[1]) ]
         df_iy_merge.columns = col_names
         # 6. check if any data has N/A drug name
         #df_merge["drugname"].isnull().sum()
-
+        print("** BEFORE ",df_iy_merge.head(15))
+        print("** SHAPE BEFORE ",df_iy_merge.shape)
+        
         # 7. then reindex with original index from df_re data frame
         df_iy_merge.index = df_re[df_re["c00"] == "IY"].index
 
         # 8. Move merged data into original df_re master data based on original index.
-        df_re[df_re["c00"] == "IY"] = df_iy_merge
-        #print("** AFTER ",df_iy_merge.head(15))
+        # iloc[:,:4] means that it needs to provide original df_iy_image data shape fitting into the destination data shape
+        df_re[df_re["c00"] == "IY"].iloc[:,:4] = df_iy_merge
+        print("** AFTER ",df_iy_merge.head(15))
 
         #print("**" * 20)
         #print("df_iy_merge")
