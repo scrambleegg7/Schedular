@@ -178,6 +178,14 @@ class SchedulerClass(object):
         mask2 = df_merge.nextDate < pd.to_datetime( self.TDY )
         
         df_merge = df_merge[mask].copy()
+
+
+        mask = df_merge.hospital.str.contains('東武練馬クリニック')
+        #df_merge = df_merge[mask].sort_values(["nextDate","name"])
+        df_merge = df_merge[~mask].sort_values(["nextDate","name"])
+        print("[buildMongoIntegrate2CSVForScheduleSheet] * shape after omitting Tobunerima clinic....", df_merge.shape)
+
+
         
         # # delete past data if nextDate is matched with future czDate
         df_merge = self.deletePastData(df_merge)
@@ -188,8 +196,8 @@ class SchedulerClass(object):
         df_merge.czDate = df_merge.czDate.dt.strftime("%Y/%m/%d")
         df_merge.exp = df_merge.exp.dt.strftime("%Y/%m/%d")     
         df_merge.total_amount = df_merge.total_amount.apply( lambda x:'{:.2f}'.format(x) ) 
-        #print(df_merge.head(3))
-        #print(df_merge.tail(3))
+        print(df_merge.head(3))
+        print(df_merge.tail(3))
 
         mainDir = u"\\\\EMSCR01\\ReceptyN\\TEXT\\"
         #udirPath = u"\\\\EMSCR01\\ReceptyN\\TEXT\\在庫一覧%s*.CSV" % (YYYYMMDD)
@@ -513,7 +521,7 @@ class SchedulerClass(object):
 def main():
 
 
-    schedularClass = SchedulerClass()
+    schedularClass = SchedulerClass(test=True)
     schedularClass.generateMergeFile()
     #schedularClass.BuildOrderData()
 

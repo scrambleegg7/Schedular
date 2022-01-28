@@ -44,8 +44,9 @@ class ReceiptyClass(object):
         self.df_y = pd.read_csv(y_csv,encoding="Shift_JISx0213",header=None,usecols=[2,4,31])
 
         self.df_y.columns = ["densan_code","drugname","YJcode"]
-
-
+        #print(self.df_y.head(10))
+        #print(self.df_y.tail(10))
+        
     def weekDaySearch(self, date):
 
         # 1. incoming date is numpy datetime
@@ -89,37 +90,42 @@ class ReceiptyClass(object):
 
         # 1. pick up selected fields from IY record
         IY_RECORD = df_re[df_re["c00"] == "IY"][["c00","c01","c02","c03"]].copy()
-        print("** BEFORE ",IY_RECORD.head(15))
-        print(IY_RECORD.shape)
+        #print("** BEFORE ",IY_RECORD.head(15))
+        #print(IY_RECORD.shape)
 
         # 2. rename columns name
+        #IY_RECORD.columns = ["ID","DUMMY","densan_code","amount"]
         IY_RECORD.columns = ["ID","DUMMY","densan_code","amount"]
         # 3. change type to int32
         IY_RECORD["densan_code"] = IY_RECORD["densan_code"].astype(np.int32)
         # 4. merge
         df_iy_merge = pd.merge(IY_RECORD,self.df_y, how="left", left_on = 'densan_code', right_on = 'densan_code')
 
-
         # 5. rename columns name to original ones. eg. c00 c01 c02 ....
         col_names = [ 'c{0:02d}'.format(i) for i in range(df_iy_merge.shape[1]) ]
         df_iy_merge.columns = col_names
         # 6. check if any data has N/A drug name
         #df_merge["drugname"].isnull().sum()
-        print("** BEFORE ",df_iy_merge.head(15))
-        print("** SHAPE BEFORE ",df_iy_merge.shape)
+        #print("** BEFORE ",df_iy_merge.head(15))
+        #print("** SHAPE BEFORE ",df_iy_merge.shape)
         
         # 7. then reindex with original index from df_re data frame
         df_iy_merge.index = df_re[df_re["c00"] == "IY"].index
+        orig_index = df_iy_merge.index.tolist()
 
         # 8. Move merged data into original df_re master data based on original index.
         # iloc[:,:4] means that it needs to provide original df_iy_image data shape fitting into the destination data shape
-        df_re[df_re["c00"] == "IY"].iloc[:,:4] = df_iy_merge
-        print("** AFTER ",df_iy_merge.head(15))
+        #df_re[df_re["c00"] == "IY"].loc[orig_index, :  ] = df_iy_merge
+        df_re.loc[df_re["c00"] == "IY", :] = df_iy_merge.copy()
+        #print("** AFTER ",df_re.head(15))
 
         #print("**" * 20)
         #print("df_iy_merge")
+        #print( df_re[df_re["c00"] == "IY"].head(10) )
+        #print( df_re[df_re["c00"] == "IY"].tail(10) )
         #print(df_iy_merge.head(3))
         #print(df_iy_merge.tail(3))
+        
 
         return df_re
     
@@ -306,6 +312,11 @@ class ReceiptyClass(object):
 
         cols = ["name","mark","hospital","medicine","nextDate","total_amount","mark2","exp","mark3","czDate","YJCode"]
         df_medicine = pd.DataFrame( medicine_details, columns=cols )
+
+        #print("** Medicine data **")
+        #print(df_medicine.head(10))
+        #print(df_medicine.tail(10))
+        
 
         return df_medicine
 

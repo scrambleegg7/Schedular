@@ -141,7 +141,7 @@ def saveMongoDB(data_dir):
                 print("")
                 continue
 
-            if i != 0 and i % 200 == 0:
+            if i != 0 and i % 1000 == 0:
                 print("[insertMongoLGSchedularBatch] inserted counter --> ",i)
                 print(nextDate,name,hospital,medicine,dec_total_amount,exp,czDate)
 
@@ -161,7 +161,7 @@ def saveMongoDB(data_dir):
         #print(buffer)
 
         ret = mongoObj.add_many(buffer)
-        print("[insertMongoLGSchedularBatch]")
+        #print("[insertMongoLGSchedularBatch]")
         #print(ret)
 
     
